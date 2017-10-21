@@ -1,9 +1,37 @@
-version: "3"
+version: "3.3"
+
+volumes:
+  postgres-data:
 
 services:
-  app:
-    build: .
+  api:
+    build: ../cash-flow-api
+    environment:
+      RAILS_MAX_THREADS: 1
     ports:
-      - 3000:3000
+      - 3000
     volumes:
-      - .:/code
+      - ../cash-flow-api:/code
+    depends_on:
+      - pg
+      - consul
+  pg:
+    image: postgres:latest
+    environment:
+      PGDATA: /var/lib/postgresql/insight/data
+    volumes:
+      - postgres-data:/var/lib/postgresql/insight/data
+  lb:
+    image: quay.io/coderiety/consul-lb:master
+    environment:
+      USE_SSL: '0'
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - consul
+  consul:
+    image: consul:1.0.0
+    hostname: consul
+    ports:
+      - 8500:8500

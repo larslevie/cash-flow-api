@@ -4,7 +4,8 @@ MAINTAINER Lars Levie <larslevie@gmail.com>
 RUN apk --update add \
       curl \
       postgresql-client \
-      make
+      make \
+      tzdata
 
 WORKDIR /code
 COPY Gemfile Gemfile.* /code/
@@ -17,5 +18,18 @@ ENV BUNDLE_GEMFILE=/code/Gemfile \
       BUNDLE_PATH=/bundle
 
 RUN ./docker/install-gems
+
+ENV CONTAINERPILOT=/etc/containerpilot.json5
+ENV CONTAINERPILOT_VERSION 3.5.0
+RUN curl -Lso /tmp/containerpilot.tar.gz \
+      "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz" \
+    && tar -xz -f /tmp/containerpilot.tar.gz \
+    && mv containerpilot /bin/ \
+    && rm /tmp/containerpilot.tar.gz
+
+COPY containerpilot.json5 /etc/
 COPY . /code/
-CMD ["bundle", "exec", "rails", "s", "Puma", "-b", "0.0.0.0"]
+
+ENV CONSUL_URL consul
+
+CMD ["/bin/containerpilot"]
