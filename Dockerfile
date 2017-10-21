@@ -4,7 +4,8 @@ MAINTAINER Lars Levie <larslevie@gmail.com>
 RUN apk --update add \
       curl \
       postgresql-client \
-      make
+      make \
+      tzdata
 
 WORKDIR /code
 COPY Gemfile Gemfile.* /code/
